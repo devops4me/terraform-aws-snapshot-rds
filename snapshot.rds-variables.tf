@@ -12,8 +12,8 @@ variable in_database_name {
     description = "The database name remembering that a different name creates another database."
 }
 
-variable in_snapshot_name {
-    description = "The name of the mummy snapshot that gives birth to this (cloned) database instance."
+variable in_id_of_db_to_clone {
+    description = "The ID of the mummy database whose latest snapshot gives birth to this new instance."
 }
 
 variable in_ecosystem_name {

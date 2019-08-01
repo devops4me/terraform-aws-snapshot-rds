@@ -1,64 +1,42 @@
 
 /*
  | --
- | -- Create a simple 32G AWS PostgreSQL RDS database. This module suits
- | -- rapid proof of concept development - it is not designed to provision
- | -- a production quality enterprise database.
+ | -- Create a simple AWS PostgreSQL RDS database from either the
+ | -- last available snapshot, or via the specified snapshot identifier
+ | -- of another database.
  | --
- | -- The username is readwrite and the database listens on port 5432.
- | -- Just provide a security group, private subnet ids, the database name
- | -- and the ubiquitous tag information.
- | --
- | -- The only outputs needed are the out_database_hostname and the simple
- | -- terraform generated out_database_password.
+ | -- This module effectively clones a database at the point at which
+ | -- the snapshot in question is taken.
  | --
 */
 resource aws_db_instance postgres {
 
-    name                   = var.in_database_name
-    vpc_security_group_ids = [ var.in_security_group_id ]
-    db_subnet_group_name   = aws_db_subnet_group.object.id
+    snapshot_identifier = data.aws_db_snapshot.parent.id
 
-    allocated_storage = "32"
+    identifier = "${ var.in_database_name }-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
+
+    name     = var.in_database_name
+    username = "readwrite"
+    password = random_string.password.result
+    port     = 5432
+
     engine            = "postgres"
     instance_class    = "db.t2.large"
-    multi_az          = "true"
-    username          = "readwrite"
-    port              = "5432"
+    multi_az          = true
 
-    password = random_string.password.result
-
-/*
-    tags {
-        Name  = "postgres-db-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
-        Class = var.in_ecosystem_name
-        Desc  = "This RDS postgres database for ${ var.in_ecosystem_name } ${ var.in_tag_description }"
-    }
-*/
+    storage_encrypted      = false
+    vpc_security_group_ids = [ var.in_security_group_id ]
+    db_subnet_group_name   = aws_db_subnet_group.me.id
+    skip_final_snapshot    = true
 
 }
 
 
 
-data aws_db_snapshot fordb {
+data aws_db_snapshot parent {
     most_recent = true
-    db_instance_identifier = var.in_snapshot_name
+    db_instance_identifier = var.in_id_of_db_to_clone
 }
-
-
-
-resource aws_db_instance store {
-
-    instance_class       = "t2.large"
-    identifier           = "db-uat"
-    username             = "xxx"
-    password             = "xxx"
-    db_subnet_group_name = "db-private-subnet"
-    snapshot_identifier  = "${data.aws_db_snapshot.fordb.id}"
-    vpc_security_group_ids = ["sg-4fd43532"]
-    skip_final_snapshot  = true
-}
-
 
 
 /*
@@ -67,19 +45,11 @@ resource aws_db_instance store {
  | -- the (usually) private subnets denoted by in_db_subnet_ids variable.
  | --
 */
-resource aws_db_subnet_group object {
+resource aws_db_subnet_group me {
 
     name_prefix = "db-${ var.in_ecosystem_name }"
     description = "RDS postgres subnet group for the ${ var.in_ecosystem_name } database."
     subnet_ids  = var.in_db_subnet_ids
-
-/*
-    tags {
-        Name   = "db-subnet-group-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
-        Class = var.in_ecosystem_name
-        Desc   = "This RDS postgres database subnet group for ${ var.in_ecosystem_name } ${ var.in_tag_description }"
-    }
-*/
 
 }
 
