@@ -28,11 +28,13 @@ resource aws_db_instance postgres {
 
     password = random_string.password.result
 
+/*
     tags {
         Name  = "postgres-db-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
         Class = var.in_ecosystem_name
         Desc  = "This RDS postgres database for ${ var.in_ecosystem_name } ${ var.in_tag_description }"
     }
+*/
 
 }
 
@@ -45,14 +47,14 @@ data aws_db_snapshot fordb {
 
 
 
-resource aws_db_instance db_uat {
+resource aws_db_instance store {
 
     instance_class       = "t2.large"
     identifier           = "db-uat"
     username             = "xxx"
     password             = "xxx"
     db_subnet_group_name = "db-private-subnet"
-    snapshot_identifier  = "${data.aws_db_snapshot.db_snapshot.id}"
+    snapshot_identifier  = "${data.aws_db_snapshot.fordb.id}"
     vpc_security_group_ids = ["sg-4fd43532"]
     skip_final_snapshot  = true
 }
@@ -71,11 +73,13 @@ resource aws_db_subnet_group object {
     description = "RDS postgres subnet group for the ${ var.in_ecosystem_name } database."
     subnet_ids  = var.in_db_subnet_ids
 
+/*
     tags {
         Name   = "db-subnet-group-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
         Class = var.in_ecosystem_name
         Desc   = "This RDS postgres database subnet group for ${ var.in_ecosystem_name } ${ var.in_tag_description }"
     }
+*/
 
 }
 
