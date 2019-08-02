@@ -39,7 +39,7 @@ module postgres_db {
 
     in_security_group_id = module.security-group.out_security_group_id
     in_db_subnet_ids     = module.vpc-network.out_private_subnet_ids
-    in_id_of_db_to_clone = var.in_id_of_db_to_clone
+######################    in_id_of_db_to_clone = var.in_id_of_db_to_clone
 
     in_database_name = local.data_base_name
 
@@ -80,7 +80,8 @@ module resource-tags {
 
 }
 
+/*
 variable in_id_of_db_to_clone {
     description = "The name of the mummy snapshot that gives birth to this (cloned) database instance."
 }
-
+*/

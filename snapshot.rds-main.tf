@@ -29,6 +29,7 @@ resource aws_db_instance postgres {
     engine         = "postgres"
     instance_class = "db.t2.large"
     multi_az       = true
+    allocated_storage = 32
 
     storage_encrypted      = false
     vpc_security_group_ids = [ var.in_security_group_id ]
