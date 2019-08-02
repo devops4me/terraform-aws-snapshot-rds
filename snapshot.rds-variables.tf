@@ -13,7 +13,8 @@ variable in_database_name {
 }
 
 variable in_id_of_db_to_clone {
-    description = "The ID of the mummy database whose latest snapshot gives birth to this new instance."
+    description = "If the ID of mummy database to clone is omitted the parameter will not be set."
+    default = ""
 }
 
 variable in_ecosystem_name {

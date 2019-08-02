@@ -1,4 +1,11 @@
 
+locals {
+
+    db_username = "rwuser${ random_string.username_suffix.result }"
+
+}
+
+
 /*
  | --
  | -- Create a simple AWS PostgreSQL RDS database from either the
@@ -11,18 +18,17 @@
 */
 resource aws_db_instance postgres {
 
-    snapshot_identifier = data.aws_db_snapshot.parent.id
-
+########    snapshot_identifier = length( data.aws_db_snapshot.parent ) == 0 ? null : data.aws_db_snapshot.parent[0]. ##### is this ID
     identifier = "${ var.in_database_name }-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
 
     name     = var.in_database_name
-    username = "readwrite"
-    password = random_string.password.result
+    username = local.db_username
+    password = random_string.dbpassword.result
     port     = 5432
 
-    engine            = "postgres"
-    instance_class    = "db.t2.large"
-    multi_az          = true
+    engine         = "postgres"
+    instance_class = "db.t2.large"
+    multi_az       = true
 
     storage_encrypted      = false
     vpc_security_group_ids = [ var.in_security_group_id ]
@@ -33,10 +39,11 @@ resource aws_db_instance postgres {
 
 
 
-data aws_db_snapshot parent {
-    most_recent = true
-    db_instance_identifier = var.in_id_of_db_to_clone
-}
+#### data aws_db_snapshot parent {
+####     count = length( var.in_id_of_db_to_clone ) > 0 ? 1 : 0
+####     most_recent = true
+####     db_instance_identifier = var.in_id_of_db_to_clone
+#### }
 
 
 /*
@@ -57,13 +64,27 @@ resource aws_db_subnet_group me {
 /*
  | --
  | -- The Terraform generated database password will contain
- | -- 16 alphanumeric characters and no specials. Note that a fixed
- | -- password length greatly reduces the (brute force) search space.
+ | -- thirty two alphanumeric characters and no specials.
  | --
 */
-resource random_string password {
-    length  = 16
+resource random_string dbpassword {
+    length  = 32
     upper   = true
+    lower   = true
+    number  = true
+    special = false
+}
+
+
+/*
+ | --
+ | -- It is good practise for the database user name to be suffixed
+ | -- with at least a few random lowercase alpha characters.
+ | --
+*/
+resource random_string username_suffix {
+    length  = 7
+    upper   = false
     lower   = true
     number  = true
     special = false
