@@ -28,7 +28,7 @@ locals {
 
 
 output out_database_hostname { value = module.postgres_db.out_database_hostname }
-output out_database_host_url { value = module.postgres_db.out_database_host_url }
+output out_database_hostport { value = module.postgres_db.out_database_hostport }
 output out_database_username { value = module.postgres_db.out_database_username }
 output out_database_password { value = module.postgres_db.out_database_password }
 
